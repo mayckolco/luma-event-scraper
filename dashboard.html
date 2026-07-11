@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Luma Event Scraper — Dashboard</title>
+  <style>
+    :root {
+      --bg: #0b0d12;
+      --surface: #141820;
+      --surface-2: #1c2230;
+      --surface-3: #252d3d;
+      --border: #2e3848;
+      --text: #eef0f6;
+      --muted: #8b93a8;
+      --accent: #7c6af7;
+      --accent-2: #5eead4;
+      --tech: #60a5fa;
+      --ai: #c084fc;
+      --green: #34d399;
+      --amber: #fbbf24;
+      --radius: 14px;
+      --shadow: 0 8px 32px rgba(0,0,0,.4);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: "Segoe UI", system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      min-height: 100vh;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 240px 1fr;
+      min-height: 100vh;
+    }
+
+    .sidebar {
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      padding: 1.5rem 1rem;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+    }
+
+    .logo {
+      font-weight: 700;
+      font-size: 1.05rem;
+      margin-bottom: 0.25rem;
+    }
+
+    .logo-sub {
+      font-size: 0.75rem;
+      color: var(--muted);
+      margin-bottom: 2rem;
+    }
+
+    .nav a {
+      display: block;
+      padding: 0.6rem 0.85rem;
+      border-radius: 8px;
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 0.88rem;
+      margin-bottom: 0.25rem;
+      transition: .15s;
+    }
+
+    .nav a:hover, .nav a.active {
+      background: rgba(124, 106, 247, .15);
+      color: var(--accent);
+    }
+
+    .nav-ext {
+      margin-top: 2rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--border);
+    }
+
+    main {
+      padding: 1.75rem 2rem 3rem;
+      overflow-x: hidden;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      flex-wrap: wrap;
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    h1 {
+      font-size: 1.6rem;
+      font-weight: 700;
+      letter-spacing: -.02em;
+    }
+
+    .subtitle { color: var(--muted); font-size: 0.9rem; margin-top: 0.25rem; }
+
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      background: rgba(52, 211, 153, .12);
+      color: var(--green);
+      font-size: 0.78rem;
+      font-weight: 600;
+      padding: 0.35rem 0.75rem;
+      border-radius: 999px;
+    }
+
+    .status-pill::before {
+      content: "";
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--green);
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: .4; }
+    }
+
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .kpi {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.25rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .kpi::after {
+      content: "";
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: var(--kpi-color, var(--accent));
+    }
+
+    .kpi-label { font-size: 0.78rem; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+    .kpi-value { font-size: 2rem; font-weight: 700; margin: 0.3rem 0; }
+    .kpi-sub { font-size: 0.8rem; color: var(--muted); }
+
+    .charts-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.25rem;
+    }
+
+    .card h2 {
+      font-size: 0.95rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+      color: var(--muted);
+    }
+
+    .bar-row {
+      display: grid;
+      grid-template-columns: 100px 1fr 40px;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 0.6rem;
+      font-size: 0.82rem;
+    }
+
+    .bar-label { color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    .bar-track {
+      height: 8px;
+      background: var(--surface-3);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .bar-fill {
+      height: 100%;
+      border-radius: 999px;
+      background: linear-gradient(90deg, var(--accent), var(--accent-2));
+      transition: width .6s ease;
+    }
+
+    .bar-fill.tech { background: linear-gradient(90deg, #3b82f6, var(--tech)); }
+    .bar-fill.ai { background: linear-gradient(90deg, #9333ea, var(--ai)); }
+
+    .bar-count { text-align: right; font-weight: 600; font-size: 0.8rem; }
+
+    .timeline {
+      display: flex;
+      align-items: flex-end;
+      gap: 6px;
+      height: 120px;
+      padding-top: 1rem;
+    }
+
+    .timeline-bar {
+      flex: 1;
+      background: linear-gradient(180deg, var(--accent), rgba(124,106,247,.3));
+      border-radius: 4px 4px 0 0;
+      min-width: 0;
+      position: relative;
+      cursor: default;
+      transition: opacity .15s;
+    }
+
+    .timeline-bar:hover { opacity: .8; }
+
+    .timeline-labels {
+      display: flex;
+      gap: 6px;
+      margin-top: 0.5rem;
+    }
+
+    .timeline-labels span {
+      flex: 1;
+      font-size: 0.65rem;
+      color: var(--muted);
+      text-align: center;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .filters {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+    }
+
+    .filters input, .filters select {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-radius: 8px;
+      padding: 0.55rem 0.85rem;
+      font-size: 0.88rem;
+      outline: none;
+    }
+
+    .filters input { flex: 1; min-width: 200px; }
+    .filters input:focus, .filters select:focus { border-color: var(--accent); }
+
+    .table-wrap {
+      overflow-x: auto;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+    }
+
+    th {
+      background: var(--surface-2);
+      color: var(--muted);
+      font-weight: 600;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+      padding: 0.75rem 1rem;
+      text-align: left;
+      position: sticky;
+      top: 0;
+    }
+
+    td {
+      padding: 0.7rem 1rem;
+      border-top: 1px solid var(--border);
+      vertical-align: middle;
+    }
+
+    tr:hover td { background: rgba(124, 106, 247, .06); }
+
+    .tag {
+      display: inline-block;
+      font-size: 0.72rem;
+      font-weight: 600;
+      padding: 0.15rem 0.5rem;
+      border-radius: 4px;
+    }
+
+    .tag.tech { background: rgba(96,165,250,.15); color: var(--tech); }
+    .tag.ai { background: rgba(192,132,252,.15); color: var(--ai); }
+
+    .event-link {
+      color: var(--text);
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .event-link:hover { color: var(--accent); }
+
+    .date-cell { color: var(--muted); font-size: 0.8rem; white-space: nowrap; }
+
+    .loading, .error-box {
+      text-align: center;
+      padding: 4rem 2rem;
+      color: var(--muted);
+    }
+
+    .error-box { color: #f87171; }
+
+    .error-box code {
+      display: block;
+      margin-top: 1rem;
+      background: var(--surface-2);
+      padding: 0.75rem;
+      border-radius: 8px;
+      color: var(--muted);
+      font-size: 0.85rem;
+    }
+
+    .table-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 0.75rem;
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+
+    .pagination button {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 0.4rem 0.75rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.82rem;
+      margin-left: 0.35rem;
+    }
+
+    .pagination button:disabled { opacity: .4; cursor: not-allowed; }
+    .pagination button:not(:disabled):hover { border-color: var(--accent); }
+
+    @media (max-width: 1100px) {
+      .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+      .charts-grid { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 768px) {
+      .layout { grid-template-columns: 1fr; }
+      .sidebar { height: auto; position: static; }
+      main { padding: 1.25rem; }
+      .kpi-grid { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="layout">
+  <aside class="sidebar">
+    <div class="logo">Luma Scraper</div>
+    <div class="logo-sub">Dashboard de eventos</div>
+    <nav class="nav">
+      <a href="#overview" class="active">Overview</a>
+      <a href="#events">Eventos</a>
+      <a href="alcance.html">Alcance del proyecto</a>
+      <a href="roadmap.md">Roadmap</a>
+    </nav>
+    <div class="nav-ext">
+      <a href="README.md">Documentación</a>
+    </div>
+  </aside>
+
+  <main>
+    <div id="app">
+      <div class="loading">Cargando datos del scraper…</div>
+    </div>
+  </main>
+</div>
+
+<script>
+const PAGE_SIZE = 50;
+let allEvents = [];
+let filteredEvents = [];
+let currentPage = 0;
+
+function parseCSVLine(line) {
+  const result = [];
+  let current = "";
+  let inQuotes = false;
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i];
+    if (ch === '"') {
+      if (inQuotes && line[i + 1] === '"') { current += '"'; i++; }
+      else inQuotes = !inQuotes;
+    } else if (ch === "," && !inQuotes) {
+      result.push(current);
+      current = "";
+    } else current += ch;
+  }
+  result.push(current);
+  return result;
+}
+
+function parseCSV(text) {
+  const lines = text.trim().split(/\r?\n/);
+  if (!lines.length) return [];
+  const headers = parseCSVLine(lines[0]);
+  return lines.slice(1).filter(Boolean).map(line => {
+    const vals = parseCSVLine(line);
+    const row = {};
+    headers.forEach((h, i) => row[h.trim()] = (vals[i] || "").trim());
+    return row;
+  });
+}
+
+function formatDate(iso) {
+  if (!iso) return "—";
+  try {
+    return new Date(iso).toLocaleDateString("es", {
+      day: "numeric", month: "short", year: "numeric",
+      hour: "2-digit", minute: "2-digit"
+    });
+  } catch { return iso; }
+}
+
+function formatShortDate(iso) {
+  if (!iso) return "—";
+  try {
+    return new Date(iso).toLocaleDateString("es", { day: "numeric", month: "short" });
+  } catch { return iso; }
+}
+
+function countBy(events, key) {
+  const counts = {};
+  events.forEach(e => {
+    const v = e[key] || "Desconocido";
+    counts[v] = (counts[v] || 0) + 1;
+  });
+  return Object.entries(counts).sort((a, b) => b[1] - a[1]);
+}
+
+function isUpcoming(startDate) {
+  return new Date(startDate) >= new Date();
+}
+
+function isToday(firstSeen) {
+  const today = new Date().toISOString().slice(0, 10);
+  return firstSeen === today;
+}
+
+function renderBarChart(data, containerId, colorClass = "") {
+  const max = data[0]?.[1] || 1;
+  return data.map(([label, count]) => `
+    <div class="bar-row">
+      <div class="bar-label" title="${label}">${label}</div>
+      <div class="bar-track">
+        <div class="bar-fill ${colorClass}" style="width:${(count / max) * 100}%"></div>
+      </div>
+      <div class="bar-count">${count}</div>
+    </div>
+  `).join("");
+}
+
+function renderTimeline(events) {
+  const byDate = {};
+  events.forEach(e => {
+    const d = e.first_seen || "—";
+    byDate[d] = (byDate[d] || 0) + 1;
+  });
+  const sorted = Object.entries(byDate).sort((a, b) => a[0].localeCompare(b[0]));
+  const max = Math.max(...sorted.map(([, c]) => c), 1);
+
+  if (!sorted.length) return "<p style='color:var(--muted)'>Sin datos</p>";
+
+  const bars = sorted.map(([date, count]) => `
+    <div class="timeline-bar" style="height:${(count / max) * 100}%"
+         title="${date}: ${count} eventos"></div>
+  `).join("");
+
+  const labels = sorted.map(([date]) =>
+    `<span>${formatShortDate(date + "T12:00:00")}</span>`
+  ).join("");
+
+  return `<div class="timeline">${bars}</div><div class="timeline-labels">${labels}</div>`;
+}
+
+function getCities(events) {
+  return [...new Set(events.map(e => e.city))].sort();
+}
+
+function applyFilters() {
+  const search = document.getElementById("search")?.value.toLowerCase() || "";
+  const city = document.getElementById("filter-city")?.value || "";
+  const category = document.getElementById("filter-category")?.value || "";
+  const upcoming = document.getElementById("filter-upcoming")?.checked || false;
+
+  filteredEvents = allEvents.filter(e => {
+    if (search && !e.name.toLowerCase().includes(search) && !e.city.toLowerCase().includes(search)) return false;
+    if (city && e.city !== city) return false;
+    if (category && e.category !== category) return false;
+    if (upcoming && !isUpcoming(e.start_date)) return false;
+    return true;
+  });
+
+  currentPage = 0;
+  renderTable();
+}
+
+function renderTable() {
+  const tbody = document.getElementById("events-tbody");
+  const footer = document.getElementById("table-footer");
+  if (!tbody) return;
+
+  const start = currentPage * PAGE_SIZE;
+  const page = filteredEvents.slice(start, start + PAGE_SIZE);
+  const totalPages = Math.ceil(filteredEvents.length / PAGE_SIZE) || 1;
+
+  tbody.innerHTML = page.map(e => `
+    <tr>
+      <td><a class="event-link" href="${e.url}" target="_blank" rel="noopener">${e.name}</a></td>
+      <td><span class="tag ${e.category}">${e.category}</span></td>
+      <td>${e.city}</td>
+      <td class="date-cell">${formatDate(e.start_date)}</td>
+      <td class="date-cell">${e.first_seen}</td>
+    </tr>
+  `).join("") || `<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:2rem">Sin resultados</td></tr>`;
+
+  footer.innerHTML = `
+    <span>Mostrando ${start + 1}–${Math.min(start + PAGE_SIZE, filteredEvents.length)} de ${filteredEvents.length}</span>
+    <div class="pagination">
+      <button id="btn-prev" ${currentPage === 0 ? "disabled" : ""}>← Anterior</button>
+      <button id="btn-next" ${currentPage >= totalPages - 1 ? "disabled" : ""}>Siguiente →</button>
+    </div>
+  `;
+
+  document.getElementById("btn-prev")?.addEventListener("click", () => { currentPage--; renderTable(); });
+  document.getElementById("btn-next")?.addEventListener("click", () => { currentPage++; renderTable(); });
+}
+
+function renderDashboard(events) {
+  const today = new Date().toISOString().slice(0, 10);
+  const newToday = events.filter(e => e.first_seen === today).length;
+  const upcoming = events.filter(e => isUpcoming(e.start_date)).length;
+  const byCity = countBy(events, "city");
+  const byCategory = countBy(events, "category");
+  const cities = getCities(events);
+
+  document.getElementById("app").innerHTML = `
+    <div class="topbar" id="overview">
+      <div>
+        <h1>Dashboard de eventos</h1>
+        <p class="subtitle">Datos de <code style="color:var(--accent)">events_master.csv</code> · ${events.length} eventos indexados</p>
+      </div>
+      <span class="status-pill">v1 activa</span>
+    </div>
+
+    <div class="kpi-grid">
+      <div class="kpi" style="--kpi-color:var(--accent)">
+        <div class="kpi-label">Total eventos</div>
+        <div class="kpi-value">${events.length.toLocaleString()}</div>
+        <div class="kpi-sub">En historial maestro</div>
+      </div>
+      <div class="kpi" style="--kpi-color:var(--green)">
+        <div class="kpi-label">Nuevos hoy</div>
+        <div class="kpi-value">${newToday.toLocaleString()}</div>
+        <div class="kpi-sub">first_seen = ${today}</div>
+      </div>
+      <div class="kpi" style="--kpi-color:var(--amber)">
+        <div class="kpi-label">Próximos</div>
+        <div class="kpi-value">${upcoming.toLocaleString()}</div>
+        <div class="kpi-sub">start_date ≥ hoy</div>
+      </div>
+      <div class="kpi" style="--kpi-color:var(--accent-2)">
+        <div class="kpi-label">Ciudades</div>
+        <div class="kpi-value">${cities.length}</div>
+        <div class="kpi-sub">Cobertura geográfica</div>
+      </div>
+    </div>
+
+    <div class="charts-grid">
+      <div class="card">
+        <h2>Eventos por ciudad</h2>
+        ${renderBarChart(byCity, "chart-city")}
+      </div>
+      <div class="card">
+        <h2>Eventos por categoría</h2>
+        ${byCategory.map(([label, count]) => {
+          const max = byCategory[0][1];
+          return `<div class="bar-row">
+            <div class="bar-label">${label}</div>
+            <div class="bar-track">
+              <div class="bar-fill ${label}" style="width:${(count / max) * 100}%"></div>
+            </div>
+            <div class="bar-count">${count}</div>
+          </div>`;
+        }).join("")}
+      </div>
+      <div class="card" style="grid-column: 1 / -1">
+        <h2>Eventos detectados por fecha (first_seen)</h2>
+        ${renderTimeline(events)}
+      </div>
+    </div>
+
+    <div class="card" id="events">
+      <h2>Explorar eventos</h2>
+      <div class="filters">
+        <input type="search" id="search" placeholder="Buscar por nombre o ciudad…">
+        <select id="filter-city">
+          <option value="">Todas las ciudades</option>
+          ${cities.map(c => `<option value="${c}">${c}</option>`).join("")}
+        </select>
+        <select id="filter-category">
+          <option value="">Todas las categorías</option>
+          <option value="tech">tech</option>
+          <option value="ai">ai</option>
+        </select>
+        <label style="display:flex;align-items:center;gap:.4rem;font-size:.85rem;color:var(--muted);cursor:pointer">
+          <input type="checkbox" id="filter-upcoming"> Solo próximos
+        </label>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Evento</th>
+              <th>Categoría</th>
+              <th>Ciudad</th>
+              <th>Fecha inicio</th>
+              <th>Detectado</th>
+            </tr>
+          </thead>
+          <tbody id="events-tbody"></tbody>
+        </table>
+      </div>
+      <div class="table-footer" id="table-footer"></div>
+    </div>
+  `;
+
+  filteredEvents = [...events];
+  ["search", "filter-city", "filter-category", "filter-upcoming"].forEach(id => {
+    document.getElementById(id)?.addEventListener("input", applyFilters);
+    document.getElementById(id)?.addEventListener("change", applyFilters);
+  });
+  renderTable();
+}
+
+async function loadData() {
+  try {
+    const res = await fetch("events_master.csv");
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const text = await res.text();
+    allEvents = parseCSV(text).filter(e => e.name && e.url);
+    if (!allEvents.length) throw new Error("CSV vacío o sin datos válidos");
+    renderDashboard(allEvents);
+  } catch (err) {
+    document.getElementById("app").innerHTML = `
+      <div class="error-box">
+        <h2>No se pudieron cargar los datos</h2>
+        <p>${err.message}</p>
+        <code>python -m http.server 8000</code>
+        <p style="margin-top:.75rem;font-size:.85rem">Luego abre <strong>http://localhost:8000/dashboard.html</strong></p>
+        <p style="margin-top:.5rem;font-size:.85rem">También necesitas haber corrido <code>python scraper.py</code> al menos una vez.</p>
+      </div>
+    `;
+  }
+}
+
+loadData();
+</script>
+
+</body>
+</html>

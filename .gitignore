@@ -1,0 +1,17 @@
+# Estado local del scraper (ignorado en desarrollo; CI los commitea con git add -f)
+seen_events.json
+events_master.csv
+new_events_*.csv
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.env
+.venv/
+venv/
+
+# Editor / OS
+.DS_Store
+Thumbs.db
+*.log

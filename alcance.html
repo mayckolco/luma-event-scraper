@@ -1,0 +1,886 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Luma Event Scraper — Alcance del Proyecto</title>
+  <style>
+    :root {
+      --bg: #0f1117;
+      --surface: #1a1d27;
+      --surface-2: #242836;
+      --border: #2e3348;
+      --text: #e8eaf0;
+      --text-muted: #9aa0b8;
+      --accent: #6c5ce7;
+      --accent-soft: rgba(108, 92, 231, 0.15);
+      --green: #00b894;
+      --green-soft: rgba(0, 184, 148, 0.12);
+      --red: #ff6b6b;
+      --red-soft: rgba(255, 107, 107, 0.12);
+      --amber: #fdcb6e;
+      --amber-soft: rgba(253, 203, 110, 0.12);
+      --blue: #74b9ff;
+      --blue-soft: rgba(116, 185, 255, 0.12);
+      --radius: 12px;
+      --shadow: 0 4px 24px rgba(0, 0, 0, 0.35);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    .hero {
+      background: linear-gradient(135deg, #1a1d27 0%, #2d1f5e 50%, #1a1d27 100%);
+      border-bottom: 1px solid var(--border);
+      padding: 3rem 2rem 2.5rem;
+    }
+
+    .hero-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .badge {
+      display: inline-block;
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      padding: 0.3rem 0.75rem;
+      border-radius: 999px;
+      margin-bottom: 1rem;
+    }
+
+    h1 {
+      font-size: clamp(1.75rem, 4vw, 2.5rem);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 0.75rem;
+    }
+
+    .hero p {
+      color: var(--text-muted);
+      max-width: 640px;
+      font-size: 1.05rem;
+    }
+
+    .hero-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1.5rem;
+      margin-top: 1.5rem;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    .hero-meta span strong { color: var(--text); }
+
+    main {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+
+    section {
+      margin-bottom: 3rem;
+    }
+
+    h2 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-bottom: 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    h2::before {
+      content: "";
+      display: inline-block;
+      width: 4px;
+      height: 1.1em;
+      background: var(--accent);
+      border-radius: 2px;
+    }
+
+    h3 {
+      font-size: 0.95rem;
+      font-weight: 600;
+      margin-bottom: 0.75rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    /* Progress overview */
+    .progress-overview {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      box-shadow: var(--shadow);
+    }
+
+    .progress-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 0.75rem;
+    }
+
+    .progress-header .pct {
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--accent);
+    }
+
+    .progress-bar {
+      height: 10px;
+      background: var(--surface-2);
+      border-radius: 999px;
+      overflow: hidden;
+      margin-bottom: 1.25rem;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), #a29bfe);
+      border-radius: 999px;
+      width: 0%;
+      transition: width 0.6s ease;
+    }
+
+    .phase-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .pill {
+      font-size: 0.78rem;
+      padding: 0.3rem 0.7rem;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      background: var(--surface-2);
+    }
+
+    .pill.done { background: var(--green-soft); color: var(--green); border-color: transparent; }
+    .pill.active { background: var(--amber-soft); color: var(--amber); border-color: transparent; }
+
+    /* Grid layouts */
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.25rem; }
+    .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; }
+
+    @media (max-width: 800px) {
+      .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+    }
+
+    /* Cards */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.25rem;
+    }
+
+    .card.in-scope { border-top: 3px solid var(--green); }
+    .card.out-scope { border-top: 3px solid var(--red); }
+
+    .card ul {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .card li {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      padding-left: 1.25rem;
+      position: relative;
+    }
+
+    .card.in-scope li::before {
+      content: "✓";
+      position: absolute;
+      left: 0;
+      color: var(--green);
+      font-weight: 700;
+    }
+
+    .card.out-scope li::before {
+      content: "✕";
+      position: absolute;
+      left: 0;
+      color: var(--red);
+      font-weight: 700;
+    }
+
+    /* Architecture flow */
+    .flow {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      overflow-x: auto;
+      padding: 1rem 0;
+    }
+
+    .flow-step {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem 1.25rem;
+      min-width: 140px;
+      text-align: center;
+      flex-shrink: 0;
+    }
+
+    .flow-step .icon { font-size: 1.5rem; margin-bottom: 0.4rem; }
+    .flow-step .label { font-size: 0.82rem; font-weight: 600; }
+    .flow-step .sub { font-size: 0.72rem; color: var(--text-muted); margin-top: 0.2rem; }
+
+    .flow-arrow {
+      color: var(--accent);
+      font-size: 1.25rem;
+      flex-shrink: 0;
+      padding: 0 0.25rem;
+    }
+
+    /* Phase timeline */
+    .phases { display: flex; flex-direction: column; gap: 0; }
+
+    .phase {
+      display: grid;
+      grid-template-columns: 48px 1fr;
+      gap: 0 1.25rem;
+      position: relative;
+    }
+
+    .phase:not(:last-child) .phase-line::after {
+      content: "";
+      position: absolute;
+      left: 23px;
+      top: 48px;
+      bottom: 0;
+      width: 2px;
+      background: var(--border);
+    }
+
+    .phase-dot {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: var(--surface-2);
+      border: 2px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      position: relative;
+      z-index: 1;
+      flex-shrink: 0;
+    }
+
+    .phase.done .phase-dot { background: var(--green-soft); border-color: var(--green); color: var(--green); }
+    .phase.active .phase-dot { background: var(--amber-soft); border-color: var(--amber); color: var(--amber); }
+
+    .phase-body {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.25rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .phase-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 0.75rem;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .phase-title { font-weight: 600; font-size: 1rem; }
+    .phase-progress { font-size: 0.8rem; color: var(--text-muted); }
+
+    .phase-deps {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-bottom: 0.75rem;
+      font-style: italic;
+    }
+
+    .items { display: flex; flex-direction: column; gap: 0.4rem; }
+
+    .item {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.6rem;
+      font-size: 0.88rem;
+      color: var(--text-muted);
+    }
+
+    .item-check {
+      width: 18px;
+      height: 18px;
+      border: 2px solid var(--border);
+      border-radius: 4px;
+      flex-shrink: 0;
+      margin-top: 2px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.7rem;
+    }
+
+    .item.done .item-check { background: var(--green-soft); border-color: var(--green); color: var(--green); }
+    .item.active .item-check { background: var(--amber-soft); border-color: var(--amber); color: var(--amber); }
+
+    .tag {
+      display: inline-block;
+      font-size: 0.7rem;
+      font-weight: 600;
+      padding: 0.1rem 0.45rem;
+      border-radius: 4px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      margin-right: 0.35rem;
+      vertical-align: middle;
+    }
+
+    .tag.rf { background: var(--blue-soft); color: var(--blue); }
+    .tag.rnf { background: var(--amber-soft); color: var(--amber); }
+
+    .deliverables {
+      margin-top: 0.75rem;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      padding-top: 0.75rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .deliverables code {
+      background: var(--surface-2);
+      padding: 0.1rem 0.4rem;
+      border-radius: 4px;
+      font-size: 0.78rem;
+      color: var(--blue);
+    }
+
+    /* Metric cards */
+    .metric {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.25rem;
+      text-align: center;
+    }
+
+    .metric .value {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--accent);
+      margin-bottom: 0.25rem;
+    }
+
+    .metric .label { font-size: 0.82rem; color: var(--text-muted); }
+
+    /* Tables */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.88rem;
+    }
+
+    th, td {
+      padding: 0.75rem 1rem;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+
+    th {
+      background: var(--surface-2);
+      color: var(--text-muted);
+      font-weight: 600;
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    tr:last-child td { border-bottom: none; }
+
+    .priority-alta { color: var(--red); font-weight: 600; font-size: 0.8rem; }
+    .priority-media { color: var(--amber); font-weight: 600; font-size: 0.8rem; }
+
+    .impact-alto { color: var(--red); }
+    .impact-medio { color: var(--amber); }
+
+    /* Future roadmap */
+    .future-version {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.25rem;
+      margin-bottom: 1rem;
+    }
+
+    .future-version h4 {
+      font-size: 0.95rem;
+      margin-bottom: 0.5rem;
+      color: var(--accent);
+    }
+
+    .future-version p { font-size: 0.88rem; color: var(--text-muted); }
+
+    .future-version .requires {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: 0.5rem;
+      opacity: 0.7;
+    }
+
+    /* Questions */
+    .question {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--amber);
+      border-radius: var(--radius);
+      padding: 1rem 1.25rem;
+      margin-bottom: 0.75rem;
+      font-size: 0.9rem;
+      color: var(--text-muted);
+    }
+
+    .question strong { color: var(--text); }
+
+    footer {
+      text-align: center;
+      padding: 2rem;
+      color: var(--text-muted);
+      font-size: 0.8rem;
+      border-top: 1px solid var(--border);
+    }
+
+    footer a { color: var(--accent); text-decoration: none; }
+    footer a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+
+  <header class="hero">
+    <div class="hero-inner">
+      <div class="badge">PRD v1.0 · Borrador</div>
+      <h1>Luma Event Scraper</h1>
+      <p>
+        Scraper automatizado que descubre diariamente eventos nuevos de <strong>tech</strong> y <strong>ai</strong>
+        en Luma (lu.ma), sin API oficial, para alimentar dashboards, newsletters o alertas.
+      </p>
+      <div class="hero-meta">
+        <span><strong>Objetivo:</strong> 1 corrida diaria, sin intervención manual</span>
+        <span><strong>Stack:</strong> Python stdlib + GitHub Actions</span>
+        <span><strong>Estado:</strong> v1 completada</span>
+      </div>
+    </div>
+  </header>
+
+  <main>
+
+    <!-- Progreso general -->
+    <section>
+      <h2>Progreso general — v1</h2>
+      <div class="progress-overview">
+        <div class="progress-header">
+          <div>
+            <div style="font-size:0.85rem;color:var(--text-muted);margin-bottom:0.25rem">Ítems completados</div>
+            <div><span class="pct" id="progress-pct">100%</span> <span style="color:var(--text-muted);font-size:0.9rem">(20 / 20)</span></div>
+          </div>
+          <div style="text-align:right;font-size:0.82rem;color:var(--text-muted)">
+            Última actualización<br><strong style="color:var(--text)">11 jul 2026</strong>
+          </div>
+        </div>
+        <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+        <div class="phase-pills" id="phase-pills"></div>
+      </div>
+    </section>
+
+    <!-- Alcance v1 -->
+    <section>
+      <h2>Alcance v1</h2>
+      <div class="grid-2">
+        <div class="card in-scope">
+          <h3>Dentro de alcance</h3>
+          <ul>
+            <li>Consultar categorías <code style="color:var(--green)">tech</code> y <code style="color:var(--green)">ai</code></li>
+            <li>Cobertura multi-ciudad (≥ 5 coordenadas configurables)</li>
+            <li>Deduplicación entre corridas por <code style="color:var(--green)">api_id</code></li>
+            <li>Persistencia: estado visto, CSV maestro, CSV diario de novedades</li>
+            <li>Ejecución programada 1 vez al día (cron / GitHub Actions)</li>
+            <li>Reintentos con backoff ante fallos de red</li>
+          </ul>
+        </div>
+        <div class="card out-scope">
+          <h3>Fuera de alcance (v1)</h3>
+          <ul>
+            <li>Scraping de listas de asistentes (requiere sesión)</li>
+            <li>Notificaciones push (Slack / Telegram / email)</li>
+            <li>Enriquecimiento de datos de hosts</li>
+            <li>Filtrado semántico por palabras clave</li>
+            <li>UI / dashboard de visualización</li>
+            <li>Deduplicación semántica (solo por <code style="color:var(--red)">api_id</code>)</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- Arquitectura -->
+    <section>
+      <h2>Arquitectura — flujo de datos</h2>
+      <div class="flow">
+        <div class="flow-step">
+          <div class="icon">🌐</div>
+          <div class="label">Luma API</div>
+          <div class="sub">get-paginated-events</div>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step">
+          <div class="icon">🐍</div>
+          <div class="label">scraper.py</div>
+          <div class="sub">Python stdlib</div>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step">
+          <div class="icon">🔍</div>
+          <div class="label">Deduplicar</div>
+          <div class="sub">seen_events.json</div>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step">
+          <div class="icon">📄</div>
+          <div class="label">CSV salida</div>
+          <div class="sub">master + diario</div>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step">
+          <div class="icon">⏰</div>
+          <div class="label">Scheduler</div>
+          <div class="sub">GitHub Actions</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Fases de desarrollo -->
+    <section>
+      <h2>Fases de desarrollo</h2>
+      <div class="phases" id="phases-container"></div>
+    </section>
+
+    <!-- Métricas de éxito -->
+    <section>
+      <h2>Métricas de éxito</h2>
+      <div class="grid-4">
+        <div class="metric">
+          <div class="value">&gt; 0</div>
+          <div class="label">Eventos nuevos / semana</div>
+        </div>
+        <div class="metric">
+          <div class="value">&lt; 5%</div>
+          <div class="label">Tasa de error de corridas</div>
+        </div>
+        <div class="metric">
+          <div class="value">0</div>
+          <div class="label">Falsos duplicados</div>
+        </div>
+        <div class="metric">
+          <div class="value">≥ 5</div>
+          <div class="label">Ciudades por corrida</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Usuarios -->
+    <section>
+      <h2>Usuarios y casos de uso</h2>
+      <div class="card" style="padding:0;overflow:hidden">
+        <table>
+          <thead>
+            <tr><th>Usuario</th><th>Caso de uso</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Persona interesada en eventos tech/AI</td>
+              <td>Recibir un feed diario de eventos nuevos sin revisar Luma manualmente</td>
+            </tr>
+            <tr>
+              <td>Community manager / organizador</td>
+              <td>Detectar eventos del ecosistema para benchmarking</td>
+            </tr>
+            <tr>
+              <td>Equipo de growth / partnerships</td>
+              <td>Identificar eventos donde vale la pena tener presencia o patrocinar</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Requisitos -->
+    <section>
+      <h2>Requisitos funcionales</h2>
+      <div class="card" style="padding:0;overflow:hidden;margin-bottom:1.25rem">
+        <table>
+          <thead>
+            <tr><th>ID</th><th>Requisito</th><th>Prioridad</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>RF-1</td><td>Consultar endpoint por cada combinación categoría + ciudad</td><td class="priority-alta">Alta</td></tr>
+            <tr><td>RF-2</td><td>Paginar automáticamente hasta agotar o límite de seguridad</td><td class="priority-alta">Alta</td></tr>
+            <tr><td>RF-3</td><td>Identificar eventos únicamente por <code>api_id</code></td><td class="priority-alta">Alta</td></tr>
+            <tr><td>RF-4</td><td>Persistir eventos ya vistos entre ejecuciones</td><td class="priority-alta">Alta</td></tr>
+            <tr><td>RF-5</td><td>Generar CSV de eventos nuevos con campos mínimos + <code>first_seen</code></td><td class="priority-alta">Alta</td></tr>
+            <tr><td>RF-6</td><td>Mantener historial acumulado append-only</td><td class="priority-media">Media</td></tr>
+            <tr><td>RF-7</td><td>Ejecución desatendida programada ≥ 1 vez al día</td><td class="priority-alta">Alta</td></tr>
+            <tr><td>RF-8</td><td>Reintentos con backoff ante fallos de red</td><td class="priority-media">Media</td></tr>
+            <tr><td>RF-9</td><td>Logging de cada corrida (consultados, nuevos, errores)</td><td class="priority-media">Media</td></tr>
+            <tr><td>RF-10</td><td>Ciudades y categorías configurables sin tocar lógica central</td><td class="priority-media">Media</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2>Requisitos no funcionales</h2>
+      <div class="card" style="padding:0;overflow:hidden">
+        <table>
+          <thead>
+            <tr><th>ID</th><th>Requisito</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>RNF-1</td><td>Sin dependencia de API oficial ni API key</td></tr>
+            <tr><td>RNF-2</td><td>Respetuoso con el servidor: pausas aleatorias, sin concurrencia agresiva</td></tr>
+            <tr><td>RNF-3</td><td>Resiliencia ante cambios de esquema: log + continuar</td></tr>
+            <tr><td>RNF-4</td><td>Portabilidad: Python estándar, sin dependencias externas obligatorias</td></tr>
+            <tr><td>RNF-5</td><td>Costo: operable en runner gratuito (GitHub Actions free tier)</td></tr>
+            <tr><td>RNF-6</td><td>Auditabilidad: campo <code>first_seen</code> en todo evento nuevo</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Riesgos -->
+    <section>
+      <h2>Riesgos y mitigaciones</h2>
+      <div class="card" style="padding:0;overflow:hidden">
+        <table>
+          <thead>
+            <tr><th>Riesgo</th><th>Impacto</th><th>Mitigación</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Endpoint no documentado cambia o deja de responder</td>
+              <td class="impact-alto">Alto</td>
+              <td>Logging detallado + revisión periódica del payload crudo</td>
+            </tr>
+            <tr>
+              <td>Medidas anti-bot (rate limiting, bloqueo IP)</td>
+              <td class="impact-medio">Medio</td>
+              <td>Pausas entre requests, sin concurrencia, backoff</td>
+            </tr>
+            <tr>
+              <td>Cambios en Términos de Servicio de Luma</td>
+              <td class="impact-medio">Medio-Alto</td>
+              <td>Revisión legal antes de uso comercial; no persistir PII</td>
+            </tr>
+            <tr>
+              <td>Sesgo geográfico del endpoint</td>
+              <td class="impact-medio">Bajo-Medio</td>
+              <td>Consultar múltiples ciudades; monitorear cobertura</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Roadmap futuro -->
+    <section>
+      <h2>Roadmap futuro (post-v1)</h2>
+      <div class="future-version">
+        <h4>v1.1 — Notificaciones</h4>
+        <p>Alertas automáticas (Slack / Telegram / email) cuando se detecten eventos nuevos.</p>
+        <div class="requires">Requiere v1 completa</div>
+      </div>
+      <div class="future-version">
+        <h4>v1.2 — Filtrado</h4>
+        <p>Filtrado por palabras clave en nombre o descripción del evento.</p>
+        <div class="requires">Requiere v1 completa</div>
+      </div>
+      <div class="future-version">
+        <h4>v2 — Enriquecimiento y visualización</h4>
+        <p>Datos de hosts (redes sociales) para lead-gen + dashboard web del historial.</p>
+        <div class="requires">Requiere v1 completa</div>
+      </div>
+    </section>
+
+    <!-- Preguntas abiertas -->
+    <section>
+      <h2>Preguntas abiertas</h2>
+      <div class="question"><strong>Uso previsto:</strong> ¿Personal/research o fin comercial? Determina rigor en revisión de ToS de Luma.</div>
+      <div class="question"><strong>Cobertura geográfica:</strong> ¿Global o ciudades específicas (ej. Lima + hubs tech)? Afecta <code>config.py</code>.</div>
+      <div class="question"><strong>Alertamiento:</strong> ¿Tiempo real o basta con reporte diario? Afecta prioridad de v1.1.</div>
+    </section>
+
+  </main>
+
+  <footer>
+    <a href="dashboard.html">Dashboard de eventos</a> ·
+    Basado en <a href="prd.md">prd.md</a> y <a href="roadmap.md">roadmap.md</a> ·
+    Luma Event Scraper · Julio 2026
+  </footer>
+
+  <script>
+    const phases = [
+      {
+        id: 0,
+        title: "Fundamentos del proyecto",
+        deps: "Ninguna — punto de partida",
+        status: "done",
+        items: [
+          { tags: ["RNF-4"], text: "Estructura base: scraper.py, config.py, .gitignore", status: "done" },
+          { tags: ["RF-10"], text: "Configuración: categorías [tech, ai] y ≥ 5 ciudades", status: "done" },
+          { tags: ["CLI"], text: "Entry point: python scraper.py y --dry-run", status: "done" }
+        ],
+        deliverables: ["scraper.py", "config.py", ".gitignore"]
+      },
+      {
+        id: 1,
+        title: "Núcleo de scraping",
+        deps: "Fase 0 completada",
+        status: "done",
+        items: [
+          { tags: ["RF-1", "RNF-1"], text: "Cliente HTTP al endpoint get-paginated-events por (categoría, ciudad)", status: "done" },
+          { tags: ["RF-2"], text: "Paginación con pagination_cursor y límite de seguridad", status: "done" },
+          { tags: ["RF-5", "RNF-6"], text: "Parseo: api_id, name, url, start_date, city, category", status: "done" }
+        ],
+        deliverables: ["Lógica de consulta y parseo en scraper.py"]
+      },
+      {
+        id: 2,
+        title: "Persistencia y deduplicación",
+        deps: "Fase 1 completada",
+        status: "done",
+        items: [
+          { tags: ["RF-3", "RF-4"], text: "Índice seen_events.json keyed por api_id", status: "done" },
+          { tags: ["RF-5"], text: "CSV diario new_events_<fecha>.csv con first_seen", status: "done" },
+          { tags: ["RF-6"], text: "Historial append-only events_master.csv", status: "done" }
+        ],
+        deliverables: ["seen_events.json", "events_master.csv", "new_events_<fecha>.csv"]
+      },
+      {
+        id: 3,
+        title: "Resiliencia y observabilidad",
+        deps: "Fase 2 completada",
+        status: "done",
+        items: [
+          { tags: ["RF-8"], text: "Reintentos con backoff exponencial", status: "done" },
+          { tags: ["RNF-2"], text: "Pausas aleatorias entre requests, sin concurrencia", status: "done" },
+          { tags: ["RNF-3"], text: "Tolerancia a cambios de esquema: log + continuar", status: "done" },
+          { tags: ["RF-9"], text: "Logging: consultados, nuevos, errores", status: "done" }
+        ],
+        deliverables: ["Manejo de errores robusto", "Logs estructurados"]
+      },
+      {
+        id: 4,
+        title: "Automatización y despliegue",
+        deps: "Fase 3 completada",
+        status: "done",
+        items: [
+          { tags: ["RF-7"], text: "GitHub Actions workflow con cron 0 8 * * *", status: "done" },
+          { tags: ["RF-4", "RF-7"], text: "Persistencia de estado en CI (commit o cache)", status: "done" },
+          { tags: ["CLI"], text: "Modo --dry-run funcional", status: "done" }
+        ],
+        deliverables: [".github/workflows/scrape.yml"]
+      },
+      {
+        id: 5,
+        title: "Validación de v1",
+        deps: "Fase 4 completada",
+        status: "done",
+        items: [
+          { tags: ["§9"], text: "Corrida end-to-end local sin errores no recuperados", status: "done" },
+          { tags: ["§9"], text: "Segunda corrida: 0 duplicados falsos", status: "done" },
+          { tags: ["RF-10", "§9"], text: "Cobertura ≥ 5 ciudades por corrida", status: "done" },
+          { tags: ["Docs"], text: "Documentar comandos de uso y mantenimiento", status: "done" }
+        ],
+        deliverables: ["v1 lista para producción diaria"]
+      }
+    ];
+
+    function renderPhases() {
+      const container = document.getElementById("phases-container");
+      container.innerHTML = phases.map(phase => {
+        const done = phase.items.filter(i => i.status === "done").length;
+        const total = phase.items.length;
+        const phaseClass = phase.status === "done" ? "done" : phase.status === "active" ? "active" : "";
+
+        const itemsHtml = phase.items.map(item => {
+          const itemClass = item.status === "done" ? "done" : item.status === "active" ? "active" : "";
+          const checkContent = item.status === "done" ? "✓" : item.status === "active" ? "~" : "";
+          const tagsHtml = item.tags.map(t => {
+            const cls = t.startsWith("RF") ? "rf" : t.startsWith("RNF") ? "rnf" : "";
+            return `<span class="tag ${cls}">${t}</span>`;
+          }).join("");
+          return `<div class="item ${itemClass}"><div class="item-check">${checkContent}</div><div>${tagsHtml}${item.text}</div></div>`;
+        }).join("");
+
+        const delivHtml = phase.deliverables.map(d => `<code>${d}</code>`).join(" · ");
+
+        return `
+          <div class="phase ${phaseClass}">
+            <div class="phase-line"><div class="phase-dot">F${phase.id}</div></div>
+            <div class="phase-body">
+              <div class="phase-header">
+                <div class="phase-title">Fase ${phase.id} — ${phase.title}</div>
+                <div class="phase-progress">${done}/${total} ítems</div>
+              </div>
+              <div class="phase-deps">${phase.deps}</div>
+              <div class="items">${itemsHtml}</div>
+              <div class="deliverables"><strong>Entregables:</strong> ${delivHtml}</div>
+            </div>
+          </div>`;
+      }).join("");
+    }
+
+    function renderProgress() {
+      const allItems = phases.flatMap(p => p.items);
+      const done = allItems.filter(i => i.status === "done").length;
+      const total = allItems.length;
+      const pct = Math.round((done / total) * 100);
+
+      document.getElementById("progress-pct").textContent = pct + "%";
+      document.getElementById("progress-fill").style.width = pct + "%";
+
+      const pillsEl = document.getElementById("phase-pills");
+      pillsEl.innerHTML = phases.map(p => {
+        const d = p.items.filter(i => i.status === "done").length;
+        const cls = d === p.items.length ? "done" : p.status === "active" ? "active" : "";
+        return `<span class="pill ${cls}">F${p.id} ${d}/${p.items.length}</span>`;
+      }).join("");
+    }
+
+    renderPhases();
+    renderProgress();
+  </script>
+
+</body>
+</html>
